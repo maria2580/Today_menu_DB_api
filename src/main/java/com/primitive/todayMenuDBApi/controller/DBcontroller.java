@@ -19,6 +19,14 @@ import java.util.List;
 @RestController
 @RequestMapping("")
 public class DBcontroller {
+    //to configure DB setting replace string value.
+    String DBname= "primitive_comments_db"; //replace your own DB name
+    String DBuser="root";
+    String DBpw="!2022primitive!";
+
+
+
+
 
     @GetMapping
     public String testController(){
@@ -35,13 +43,17 @@ public class DBcontroller {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/primitive_comments_db?useSSL=False", "root", "!2022primitive!");
-
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
             System.out.println(con.getCatalog()+"getCatalog()");
 
 
+            Statement stmt0 = con.createStatement();
+            stmt0.execute("create table if not exists comments (ID int, Content varchar(600), Date varchar(20));");
+
             Statement stmt = con.createStatement();
             ResultSet rs =stmt.executeQuery("SELECT * from comments where Date = '"+day+"';");
+
+
             System.out.println("쿼리문 실행 완료");
 
             for (int i = 0 ; rs.next(); i++){
@@ -63,7 +75,7 @@ public class DBcontroller {
     public String add_data(@RequestBody String content, @PathVariable String date){
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/primitive_comments_db?useSSL=False", "root", "!2022primitive!");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
 
             System.out.println(con.getCatalog()+"getCatalog()");
 
@@ -130,7 +142,11 @@ public class DBcontroller {
 
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/primitive_comments_db?useSSL=False","root","!2022primitive!");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/"+DBname+"?useSSL=False",DBuser,DBpw);
+
+            Statement stmt0 = con.createStatement();
+           stmt0.execute("create table if not exists claims (ID int, suggestion varchar(100), date varchar(20));");
+
 
             Statement stmt = con.createStatement();
             ResultSet rs =stmt.executeQuery("SELECT ID FROM claims ORDER BY id DESC LIMIT 1;");
