@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.primitive'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2'
 sourceCompatibility = '1.8'
 
 configurations {
@@ -32,6 +32,7 @@ dependencies {
 	implementation 'org.springframework:spring-jdbc:5.3.20'
 	implementation 'mysql:mysql-connector-java:8.0.29'
 	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+	implementation 'commons-fileupload:commons-fileupload:1.4'
 }
 
 tasks.named('test') {
