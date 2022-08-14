@@ -34,7 +34,7 @@ public class DBcontroller {
             con.createStatement().execute("create table if not exists comments (ID int, Content varchar(600), Date varchar(20));");
             con.createStatement().execute("create table if not exists likes (ID int, amount int, Date varchar(20));");
             con.createStatement().execute("create table if not exists dislikes (ID int, amount int, Date varchar(20));");
-
+            con.close();
         }catch (Exception e ){
             e.printStackTrace();
         }
@@ -66,7 +66,7 @@ public class DBcontroller {
 
             }
             jsonObject.put("content",req_array);
-
+            con.close();
             return jsonObject.toJSONString();
 
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class DBcontroller {
 
             String query = String.format("insert into comments(ID, Content, Date) values(%d,'%s','%s');",(last_ID+1),content,date);
             stmt.executeUpdate(query);
-
+            con.close();
         } catch (Exception e) {
            e.printStackTrace();
         }
@@ -119,6 +119,7 @@ public class DBcontroller {
             }else{
                 amount=0;
             }
+            con.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -137,6 +138,7 @@ public class DBcontroller {
             }else{
                 amount=0;
             }
+            con.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -182,10 +184,7 @@ public class DBcontroller {
                 amount=0;
                 stmt.execute(String.format("insert likes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount+1,day));
             }
-
-
-
-
+            con.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -229,7 +228,7 @@ public class DBcontroller {
                 stmt.execute(String.format("insert likes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount-1,day));
 
             }
-
+            con.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -271,7 +270,7 @@ public class DBcontroller {
                 stmt.execute(String.format("insert dislikes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount+1,day));
             }
 
-
+            con.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -312,7 +311,7 @@ public class DBcontroller {
                 stmt.execute(String.format("insert dislikes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount-1,day));
             }
 
-
+            con.close();
 
 
         } catch (Exception e) {
@@ -382,7 +381,7 @@ public class DBcontroller {
             String query = String.format("insert into claims(ID, suggestions, date) values(%d,'%s','%s');",a+1,content,date);
             stmt.executeUpdate(query);
             System.out.println("1");
-
+            con.close();
         }catch(Exception e) {}
         return String.format("{content : %s}", content);
     }
