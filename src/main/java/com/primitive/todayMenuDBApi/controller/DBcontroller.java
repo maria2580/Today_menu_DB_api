@@ -4,10 +4,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
 import java.security.PublicKey;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,9 +22,23 @@ public class DBcontroller {
     String DBname= "primitive_today_menu_db"; //replace your own DB name
     String DBuser="marin_admin";
     String DBpw="!2022primitive!";
+    String URL ="jdbc:mysql://primitive-today-menu-db.car8huvgqumw.ap-northeast-2.rds.amazonaws.com:3306"+"?useSSL=False";
 
     @GetMapping
     public String testController(){
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
+
+            con.createStatement().execute("create table if not exists comments (ID int, Content varchar(600), Date varchar(20));");
+            con.createStatement().execute("create table if not exists likes (ID int, amount int, Date varchar(20));");
+            con.createStatement().execute("create table if not exists dislikes (ID int, amount int, Date varchar(20));");
+
+        }catch (Exception e ){
+            e.printStackTrace();
+        }
+
         return "working";
     }
 
@@ -42,18 +53,13 @@ public class DBcontroller {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://43.200.172.82:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
-            System.out.println(con.getCatalog()+"getCatalog()");
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
 
 
-            Statement stmt0 = con.createStatement();
-            stmt0.execute("create table if not exists comments (ID int, Content varchar(600), Date varchar(20));");
-
-            Statement stmt = con.createStatement();
-            ResultSet rs =stmt.executeQuery("SELECT * from comments where Date = '"+day+"';");
-
-
-            System.out.println("쿼리문 실행 완료");
+            Statement stmt1 = con.createStatement();
+            ResultSet rs =stmt1.executeQuery("SELECT * from comments where Date = '"+day+"';");
+            //System.out.println("쿼리문 실행 완료");
 
             for (int i = 0 ; rs.next(); i++){
                 req_array.add(rs.getString("Content"));
@@ -68,13 +74,14 @@ public class DBcontroller {
         }
         return jsonObject.toJSONString();
     }
+
+
     @PostMapping("add/comments/{date}")
     public String add_data(@RequestBody String content, @PathVariable String date){
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://43.200.172.82:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
-
-            System.out.println(con.getCatalog()+"getCatalog()");
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
 
             Statement stmt = con.createStatement();
             ResultSet rs =stmt.executeQuery("SELECT ID FROM comments ORDER BY id DESC LIMIT 1;");
@@ -99,52 +106,101 @@ public class DBcontroller {
 
         return String.format("{ content : %s }",content);
     }
-
-    @PostMapping("likes/{day}/plus")
+    @GetMapping("likes/{day}")
+    public int get_like(@PathVariable String day){
+        int amount=0;
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
+            ResultSet rs =con.createStatement().executeQuery(String.format("SELECT amount FROM likes where date='%s';",day));
+            if (rs.next()){
+                amount=rs.getInt(0);
+            }else{
+                amount=0;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return amount;
+    }
+    @GetMapping("dislikes/{day}")
+    public int get_dislike(@PathVariable String day){
+        int amount=0;
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
+            ResultSet rs =con.createStatement().executeQuery(String.format("SELECT amount FROM dislikes where date='%s';",day));
+            if (rs.next()){
+                amount=rs.getInt(0);
+            }else{
+                amount=0;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return amount;
+    }
+    @PostMapping("add/likes/{day}/plus")
     public void likes_plus(@PathVariable String day){
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://43.200.172.82:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
-
-            System.out.println(con.getCatalog()+"getCatalog()");
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
 
             Statement stmt = con.createStatement();
-            ResultSet rs =stmt.executeQuery("SELECT ID FROM like ORDER BY id DESC LIMIT 1;");
+            ResultSet rs =stmt.executeQuery("SELECT ID FROM likes ORDER BY id DESC LIMIT 1;");
 
             rs.next();
             int a;
             try{
-                a= rs.getInt("ID");}catch (Exception e){a=0;}
-            System.out.println(a+"to check arrived value");
-            int last_ID=a;
-
-            String query = String.format("SELECT * FROM like where date=%s;",day);
-            ResultSet rs2 =stmt.executeQuery(query);
-            int amount;
-            try {
-                amount = rs2.getInt("amount");
+                a= rs.getInt("ID");
             }catch (Exception e){
-                amount=0;
+                a=0;
             }
 
 
-            String query2 = String.format("update like set amount=%d where date=%s;",amount+1,day);
-            stmt.executeUpdate(query2);
+
+            System.out.println(a+"to check arrived value");
+            int last_ID=a;
+
+            String query = String.format("SELECT * FROM likes where date='%s';",day);
+            ResultSet rs2 =stmt.executeQuery(query);
+            int amount;
+            if(rs2.next()){
+                //DB에 값이 들어있는 경우
+                try {
+                    amount = rs2.getInt("amount");
+                }catch (Exception e){
+                    amount=0;
+                }
+
+                stmt.execute(String.format("update likes set amount=%d where date='%s';",amount+1,day));
+            }else{
+                //DB에 데이터 자체가 없는 경우
+                amount=0;
+                stmt.execute(String.format("insert likes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount+1,day));
+            }
+
+
+
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    @PostMapping("likes/{day}/minus")
+    @PostMapping("add/likes/{day}/minus")
     public void likes_minus(@PathVariable String day){
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://43.200.172.82:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
 
-            System.out.println(con.getCatalog()+"getCatalog()");
 
             Statement stmt = con.createStatement();
-            ResultSet rs =stmt.executeQuery("SELECT ID FROM like ORDER BY id DESC LIMIT 1;");
+            ResultSet rs =stmt.executeQuery("SELECT ID FROM likes ORDER BY id DESC LIMIT 1;");
 
             rs.next();
             int a;
@@ -153,34 +209,42 @@ public class DBcontroller {
             System.out.println(a+"to check arrived value");
             int last_ID=a;
 
-            String query = String.format("SELECT * FROM like where date=%s;",day);
+            String query = String.format("SELECT * FROM likes where date='%s';",day);
             ResultSet rs2 =stmt.executeQuery(query);
             int amount;
-            try {
-                amount = rs2.getInt("amount");
-            }catch (Exception e){
+
+
+            if(rs2.next()){
+                //DB에 값이 들어있는 경우
+                try {
+                    amount = rs2.getInt("amount");
+                }catch (Exception e){
+                    amount=0;
+                }
+
+                stmt.execute(String.format("update likes set amount=%d where date='%s';",amount-1,day));
+            }else{
+                //DB에 데이터 자체가 없는 경우
                 amount=0;
+                stmt.execute(String.format("insert likes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount-1,day));
+
             }
-
-
-            String query2 = String.format("update like set amount=%d where date=%s;",amount-1,day);
-            stmt.executeUpdate(query2);
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    @PostMapping("dislikes/{day}/plus")
+
+    @PostMapping("add/dislikes/{day}/plus")
     public void dislikes_plus(@PathVariable String day){
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://43.200.172.82:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
-
-            System.out.println(con.getCatalog()+"getCatalog()");
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
 
             Statement stmt = con.createStatement();
-            ResultSet rs =stmt.executeQuery("SELECT ID FROM like ORDER BY id DESC LIMIT 1;");
+            ResultSet rs =stmt.executeQuery("SELECT ID FROM dislikes ORDER BY id DESC LIMIT 1;");
 
             rs.next();
             int a;
@@ -189,34 +253,39 @@ public class DBcontroller {
             System.out.println(a+"to check arrived value");
             int last_ID=a;
 
-            String query = String.format("SELECT * FROM dislike where date=%s;",day);
+            String query = String.format("SELECT * FROM dislikes where date='%s';",day);
             ResultSet rs2 =stmt.executeQuery(query);
             int amount;
-            try {
-                amount = rs2.getInt("amount");
-            }catch (Exception e){
+            if(rs2.next()){
+                //DB에 값이 들어있는 경우
+                try {
+                    amount = rs2.getInt("amount");
+                }catch (Exception e){
+                    amount=0;
+                }
+
+                stmt.execute(String.format("update dislikes set amount=%d where date='%s';",amount+1,day));
+            }else{
+                //DB에 데이터 자체가 없는 경우
                 amount=0;
+                stmt.execute(String.format("insert dislikes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount+1,day));
             }
-
-
-            String query2 = String.format("update dislike set amount=%d where date=%s;",amount+1,day);
-            stmt.executeUpdate(query2);
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    @PostMapping("dislikes/{day}/minus")
+    @PostMapping("add/dislikes/{day}/minus")
     public void dislikes_minus(@PathVariable String day){
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://43.200.172.82:3306/"+DBname+"?useSSL=False", DBuser, DBpw);
+            Connection con = DriverManager.getConnection(URL, DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
 
-            System.out.println(con.getCatalog()+"getCatalog()");
 
             Statement stmt = con.createStatement();
-            ResultSet rs =stmt.executeQuery("SELECT ID FROM like ORDER BY id DESC LIMIT 1;");
+            ResultSet rs =stmt.executeQuery("SELECT ID FROM dislikes ORDER BY id DESC LIMIT 1;");
 
             rs.next();
             int a;
@@ -225,18 +294,25 @@ public class DBcontroller {
             System.out.println(a+"to check arrived value");
             int last_ID=a;
 
-            String query = String.format("SELECT * FROM dislike where date=%s;",day);
+            String query = String.format("SELECT * FROM dislikes where date='%s';",day);
             ResultSet rs2 =stmt.executeQuery(query);
             int amount;
-            try {
-                amount = rs2.getInt("amount");
-            }catch (Exception e){
+            if(rs2.next()){
+                //DB에 값이 들어있는 경우
+                try {
+                    amount = rs2.getInt("amount");
+                }catch (Exception e){
+                    amount=0;
+                }
+
+                stmt.execute(String.format("update dislikes set amount=%d where date='%s';",amount-1,day));
+            }else{
+                //DB에 데이터 자체가 없는 경우
                 amount=0;
+                stmt.execute(String.format("insert dislikes (ID, amount, Date) values(%d,%d,'%s');",a+1,amount-1,day));
             }
 
 
-            String query2 = String.format("update dislike set amount=%d where date=%s;",amount-1,day);
-            stmt.executeUpdate(query2);
 
 
         } catch (Exception e) {
@@ -284,7 +360,8 @@ public class DBcontroller {
 
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://43.200.172.82:3306/"+DBname+"?useSSL=False",DBuser,DBpw);
+            Connection con = DriverManager.getConnection("jdbc:mysql://primitive-today-menu-db.car8huvgqumw.ap-northeast-2.rds.amazonaws.com:3306"+"?useSSL=False", DBuser, DBpw);
+            con.createStatement().execute("use "+DBname);
 
             Statement stmt0 = con.createStatement();
            stmt0.execute("create table if not exists claims (ID int, suggestion varchar(100), date varchar(20));");

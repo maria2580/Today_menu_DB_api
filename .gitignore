@@ -40,3 +40,4 @@ out/
 /target/
 
 /.idea/gradle.xml
+/src/main/java/com/primitive/todayMenuDBApi/Private_class.java
