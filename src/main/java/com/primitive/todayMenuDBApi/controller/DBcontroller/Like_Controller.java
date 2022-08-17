@@ -21,7 +21,7 @@ public class Like_Controller {
             con.createStatement().execute("use "+key.getDBname());
             ResultSet rs =con.createStatement().executeQuery(String.format("SELECT amount FROM likes where date='%s';",day));
             if (rs.next()){
-                amount=rs.getInt(0);
+                amount=rs.getInt("amount");
             }else{
                 amount=0;
             }

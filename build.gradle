@@ -33,6 +33,9 @@ dependencies {
 	implementation 'mysql:mysql-connector-java:8.0.29'
 	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 	implementation 'commons-fileupload:commons-fileupload:1.4'
+
+	//FOR IMAGE UPLOAD
+	implementation 'commons-fileupload:commons-fileupload:1.4'
 }
 
 tasks.named('test') {
