@@ -17,14 +17,16 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.FieldPosition;
 import java.util.ArrayList;
 
 @RestController
 @RequestMapping("")
 public class ImageController {
+    String osName = System.getProperty("os.name").toLowerCase();
     private final String sep=File.separator;
-    private final String uploadDir = (sep=="/"?"~/home/images":"D:\\test\\images");//sep 이 / 인 경우 리눅스이며 구분자 중복 필요 없음
-    private final String u = (sep=="/"?"~/home/images":"D:\\\\test\\\\images");
+    private final String uploadDir = (osName.contains("win")?"D:\\today_menu_api\\images":"/home/ubuntu/today_menu_api/images");//sep 이 / 인 경우 리눅스이며 구분자 중복 필요 없음
+    private final String u = (osName.contains("win")?"D:\\\\today_menu_api\\\\images":"/home/ubuntu/today_menu_api/images");
 
 
 
@@ -32,6 +34,7 @@ public class ImageController {
 
     @GetMapping( value = "images/lunch/{day}", produces = MediaType.IMAGE_JPEG_VALUE )
     public byte[] get_lunch_image(@PathVariable String day) throws IOException {
+
         String filePath = null;//DB에서 받아온 경로가 저장될 변수
         FileInputStream in=null;//로컬에서 읽은 파일이 들어오는 변수
     //DB에서 경로 조회
@@ -44,6 +47,7 @@ public class ImageController {
             if (rs.next()){
                 filePath=rs.getString("Path");
             }
+
             if (filePath==null){
                 filePath=uploadDir+sep+"no_image.png";
             }
@@ -60,6 +64,7 @@ public class ImageController {
     }
     @GetMapping(value = "images/dinner/{day}", produces = MediaType.IMAGE_JPEG_VALUE )
     public byte[] get_dinner_image(@PathVariable String day) throws IOException{
+
         String filePath = null;//DB에서 받아온 경로가 저장될 변수
         FileInputStream in=null;//로컬에서 읽은 파일이 들어오는 변수
     //DB에서 경로 조회
@@ -79,7 +84,7 @@ public class ImageController {
             e.printStackTrace();
         }
         try{
-        in = new FileInputStream(filePath);
+            in = new FileInputStream(filePath);
         }catch (Exception e){
             in = new FileInputStream(uploadDir+sep+"no_image.png");
         }
@@ -95,13 +100,14 @@ public class ImageController {
             String filename =day+suffix;
             String fullPath = uploadDir +sep+"lunch"+sep+ filename;
             String DBPath= u+sep+sep+"lunch"+sep+sep+filename;//윈도우인 경우 구분자가 \이기 때문에 구분자 중복 필요
-            if(sep=="/"){DBPath=fullPath;}//리눅스인 경우 sep 문자가 / 이므로 DB 저장시 구분자 중복 필요 없음
 
     //멀티파트로 받은 변수를 로컬 경로에 저장
             if(file != null) {
                 try{
-                File uploadFile = new File(fullPath);
-                FileCopyUtils.copy(file.getBytes(), uploadFile);
+                    if(!osName.contains("win")){Runtime.getRuntime().exec("chmod -R 777 " + "/home/ubuntu/today_menu_api/");}
+                    File uploadFile = new File(fullPath);
+                    FileCopyUtils.copy(file.getBytes(), uploadFile);
+
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -146,10 +152,10 @@ public class ImageController {
             String filename =day+suffix;
             String fullPath = uploadDir +sep+"dinner"+sep+ filename;
             String DBPath= u+sep+sep+"dinner"+sep+sep+filename;//윈도우인 경우 구분자가 \이기 때문에 구분자 중복 필요
-            if(sep=="/"){DBPath=fullPath;}//리눅스인 경우 sep 문자가 / 이므로 DB 저장시 구분자 중복 필요 없음
             //멀티파트로 받은 변수를 로컬 경로에 저장
             if(file != null) {
                 try{
+                    if(!osName.contains("win")){Runtime.getRuntime().exec("chmod -R 777 " + "/home/ubuntu/today_menu_api/");}
                     File uploadFile = new File(fullPath);
                     FileCopyUtils.copy(file.getBytes(), uploadFile);
                 }catch (Exception e){
