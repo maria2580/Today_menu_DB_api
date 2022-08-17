@@ -22,8 +22,12 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("")
 public class ImageController {
-    private final String uploadDir = "D:\\test\\images";
-    private final String u = "D:\\\\test\\\\images";
+    private final String sep=File.separator;
+    private final String uploadDir = (sep=="/"?"~/home/images":"D:\\test\\images");//sep 이 / 인 경우 리눅스이며 구분자 중복 필요 없음
+    private final String u = (sep=="/"?"~/home/images":"D:\\\\test\\\\images");
+
+
+
     private DB_Connection_Data key = DB_Connection_Data.getInstance();
 
     @GetMapping( value = "images/lunch/{day}", produces = MediaType.IMAGE_JPEG_VALUE )
@@ -41,12 +45,17 @@ public class ImageController {
                 filePath=rs.getString("Path");
             }
             if (filePath==null){
-                filePath=uploadDir+"\\no_image.png";
+                filePath=uploadDir+sep+"no_image.png";
             }
         }catch (Exception e){
             e.printStackTrace();
         }
-        in = new FileInputStream(filePath);
+        try{
+            in = new FileInputStream(filePath);
+        }catch (Exception e){
+            in = new FileInputStream(uploadDir+sep+"no_image.png");
+        }
+
         return IOUtils.toByteArray(in);
     }
     @GetMapping(value = "images/dinner/{day}", produces = MediaType.IMAGE_JPEG_VALUE )
@@ -64,12 +73,17 @@ public class ImageController {
                 filePath=rs.getString("Path");
             }
             if (filePath==null){
-                filePath=uploadDir+"\\no_image.png";
+                filePath=uploadDir+sep+"no_image.png";
             }
         }catch (Exception e){
             e.printStackTrace();
         }
+        try{
         in = new FileInputStream(filePath);
+        }catch (Exception e){
+            in = new FileInputStream(uploadDir+sep+"no_image.png");
+        }
+
         return IOUtils.toByteArray(in);
     }
 
@@ -79,9 +93,9 @@ public class ImageController {
         if (!file.isEmpty()) {
             final String suffix =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
             String filename =day+suffix;
-            String fullPath = uploadDir +"\\lunch\\"+ filename;
-            String DBPath= u+"\\\\lunch\\\\"+filename;
-
+            String fullPath = uploadDir +sep+"lunch"+sep+ filename;
+            String DBPath= u+sep+sep+"lunch"+sep+sep+filename;//윈도우인 경우 구분자가 \이기 때문에 구분자 중복 필요
+            if(sep=="/"){DBPath=fullPath;}//리눅스인 경우 sep 문자가 / 이므로 DB 저장시 구분자 중복 필요 없음
 
     //멀티파트로 받은 변수를 로컬 경로에 저장
             if(file != null) {
@@ -112,10 +126,10 @@ public class ImageController {
                 ResultSet rs2 =con.createStatement().executeQuery(query);
                 if(rs2.next()){
         //DB에 값이 이미 들어있는 경우 - 수정
-                    con.createStatement().execute(String.format("update images set Path='%s' where is_lunch=%b and date='%s';",DBPath,false,day));
+                    con.createStatement().execute(String.format("update images set Path='%s' where is_lunch=%b and date='%s';",DBPath,true,day));
                 }else{
         //DB에 데이터 자체가 없는 경우 - 열 추가
-                    con.createStatement().execute(String.format("insert images (ID, is_lunch, Path, Date) values(%d,%b,'%s','%s');",idx+1,false,DBPath,day));
+                    con.createStatement().execute(String.format("insert images (ID, is_lunch, Path, Date) values(%d,%b,'%s','%s');",idx+1,true,DBPath,day));
                 }
                 con.close();
             }catch (Exception e){
@@ -130,10 +144,9 @@ public class ImageController {
         if (!file.isEmpty()) {
             final String suffix =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
             String filename =day+suffix;
-            String fullPath = uploadDir +"\\dinner\\"+ filename;
-            String DBPath= u+"\\\\dinner\\\\"+filename;
-
-
+            String fullPath = uploadDir +sep+"dinner"+sep+ filename;
+            String DBPath= u+sep+sep+"dinner"+sep+sep+filename;//윈도우인 경우 구분자가 \이기 때문에 구분자 중복 필요
+            if(sep=="/"){DBPath=fullPath;}//리눅스인 경우 sep 문자가 / 이므로 DB 저장시 구분자 중복 필요 없음
             //멀티파트로 받은 변수를 로컬 경로에 저장
             if(file != null) {
                 try{
