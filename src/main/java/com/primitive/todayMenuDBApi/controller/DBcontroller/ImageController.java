@@ -94,7 +94,7 @@ public class ImageController {
 
 
     @PostMapping("add/images/lunch/{day}")
-    public void set_lunch_image(@PathVariable String day, @RequestParam String itemName, @RequestParam MultipartFile file){
+    public void set_lunch_image(@PathVariable String day, @RequestParam MultipartFile file){
         if (!file.isEmpty()) {
             final String suffix =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
             String filename =day+suffix;
@@ -104,7 +104,6 @@ public class ImageController {
     //멀티파트로 받은 변수를 로컬 경로에 저장
             if(file != null) {
                 try{
-                    if(!osName.contains("win")){Runtime.getRuntime().exec("chmod -R 777 " + "/home/ubuntu/today_menu_api/");}
                     File uploadFile = new File(fullPath);
                     FileCopyUtils.copy(file.getBytes(), uploadFile);
 
@@ -146,7 +145,7 @@ public class ImageController {
     }
 
     @PostMapping("add/images/dinner/{day}")
-    public void set_dinner_image(@PathVariable String day, @RequestParam String itemName, @RequestParam MultipartFile file){
+    public void set_dinner_image(@PathVariable String day, @RequestParam MultipartFile file){
         if (!file.isEmpty()) {
             final String suffix =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
             String filename =day+suffix;
