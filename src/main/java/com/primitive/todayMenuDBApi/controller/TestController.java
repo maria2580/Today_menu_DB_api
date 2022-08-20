@@ -22,8 +22,7 @@ public class TestController {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection(key.getURL(), key.getDBuser(), key.getDBpw());
             con.createStatement().execute("use "+key.getDBname());
-
-            con.createStatement().execute("create table if not exists comments (ID int, Content varchar(600), Date varchar(20));");
+            con.createStatement().execute("create table if not exists comments (ID int, Content varchar(600), Date varchar(20), Date_written varchar(20));");
             con.createStatement().execute("create table if not exists likes (ID int, amount int, Date varchar(20));");
             con.createStatement().execute("create table if not exists dislikes (ID int, amount int, Date varchar(20));");
             con.createStatement().execute("create table if not exists images (ID int, is_lunch boolean, Path varchar(100), Date varchar(20));");

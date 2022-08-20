@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @RestController
 @RequestMapping("")
@@ -21,6 +23,7 @@ public class CommentController {
 
         JSONObject jsonObject = new JSONObject();
         JSONArray req_array = new JSONArray();
+        JSONArray date_array= new JSONArray();
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -34,9 +37,11 @@ public class CommentController {
 
             for (int i = 0 ; rs.next(); i++){
                 req_array.add(rs.getString("Content"));
+                date_array.add(rs.getString("Date_written"));
 
             }
             jsonObject.put("content",req_array);
+            jsonObject.put("date_written",date_array);
             con.close();
             return jsonObject.toJSONString();
 
@@ -49,6 +54,9 @@ public class CommentController {
 
     @PostMapping("add/comments/{date}")
     public String add_data(@RequestBody String content, @PathVariable String date){
+        long now = System.currentTimeMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String written_time = sdf.format(new Date(now));
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection(key.getURL(), key.getDBuser(), key.getDBpw());
@@ -64,7 +72,7 @@ public class CommentController {
             System.out.println(a+"to check arrived value");
             int last_ID=a;
 
-            String query = String.format("insert into comments(ID, Content, Date) values(%d,'%s','%s');",(last_ID+1),content,date);
+            String query = String.format("insert into comments(ID, Content, Date, Date_written) values(%d,'%s','%s','%s');",(last_ID+1),content,date,written_time);
             stmt.executeUpdate(query);
             con.close();
         } catch (Exception e) {
