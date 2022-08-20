@@ -93,7 +93,7 @@ public class ImageController {
     }
 
 
-    @PostMapping("add/images/lunch/{day}")
+    @PostMapping("add/images/lunch/{day}")//@modelattribute("key")
     public void set_lunch_image(@PathVariable String day, @RequestParam MultipartFile file){
         if (!file.isEmpty()) {
             final String suffix =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
