@@ -33,6 +33,7 @@ public class CommentController {
 
             Statement stmt1 = con.createStatement();
             ResultSet rs =stmt1.executeQuery("SELECT * from comments where Date = '"+day+"';");
+            con.close();
             //System.out.println("쿼리문 실행 완료");
 
             for (int i = 0 ; rs.next(); i++){
@@ -42,7 +43,7 @@ public class CommentController {
             }
             jsonObject.put("content",req_array);
             jsonObject.put("date_written",date_array);
-            con.close();
+
             return jsonObject.toJSONString();
 
         } catch (Exception e) {
@@ -54,8 +55,8 @@ public class CommentController {
 
     @PostMapping("add/comments/{date}")
     public String add_data(@RequestBody String content, @PathVariable String date){
-        long now = System.currentTimeMillis();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        long now = System.currentTimeMillis()+32400000;//9시간 추가, 하루 = 86,400,000
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String written_time = sdf.format(new Date(now));
         try  {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -64,17 +65,20 @@ public class CommentController {
 
             Statement stmt = con.createStatement();
             ResultSet rs =stmt.executeQuery("SELECT ID FROM comments ORDER BY id DESC LIMIT 1;");
-
+            con.close();
             rs.next();
             int a;
             try{
                 a= rs.getInt("ID");}catch (Exception e){a=0;}
             System.out.println(a+"to check arrived value");
             int last_ID=a;
+            con = DriverManager.getConnection(key.getURL(), key.getDBuser(), key.getDBpw());
+            con.createStatement().execute("use "+key.getDBname());
 
             String query = String.format("insert into comments(ID, Content, Date, Date_written) values(%d,'%s','%s','%s');",(last_ID+1),content,date,written_time);
             stmt.executeUpdate(query);
             con.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }

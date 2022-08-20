@@ -20,12 +20,13 @@ public class Like_Controller {
             Connection con = DriverManager.getConnection(key.getURL(), key.getDBuser(), key.getDBpw());
             con.createStatement().execute("use "+key.getDBname());
             ResultSet rs =con.createStatement().executeQuery(String.format("SELECT amount FROM likes where date='%s';",day));
+            con.close();
             if (rs.next()){
                 amount=rs.getInt("amount");
             }else{
                 amount=0;
             }
-            con.close();
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -39,12 +40,12 @@ public class Like_Controller {
             Connection con = DriverManager.getConnection(key.getURL(), key.getDBuser(), key.getDBpw());
             con.createStatement().execute("use "+key.getDBname());
             ResultSet rs =con.createStatement().executeQuery(String.format("SELECT amount FROM dislikes where date='%s';",day));
+            con.close();
             if (rs.next()){
                 amount=rs.getInt(0);
             }else{
                 amount=0;
             }
-            con.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -59,7 +60,6 @@ public class Like_Controller {
 
             Statement stmt = con.createStatement();
             ResultSet rs =stmt.executeQuery("SELECT ID FROM likes ORDER BY id DESC LIMIT 1;");
-
             rs.next();
             int a;
             try{
@@ -74,6 +74,8 @@ public class Like_Controller {
             int last_ID=a;
 
             String query = String.format("SELECT * FROM likes where date='%s';",day);
+            con = DriverManager.getConnection(key.getURL(), key.getDBuser(), key.getDBpw());
+            con.createStatement().execute("use "+key.getDBname());
             ResultSet rs2 =stmt.executeQuery(query);
             int amount;
             if(rs2.next()){
@@ -96,6 +98,8 @@ public class Like_Controller {
             e.printStackTrace();
         }
     }
+
+
     @PostMapping("add/likes/{day}/minus")
     public void likes_minus(@PathVariable String day){
         try  {
