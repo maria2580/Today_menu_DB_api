@@ -44,17 +44,18 @@ public class ImageController {
             con.createStatement().execute("use " + key.getDBname());
 
             ResultSet rs =con.createStatement().executeQuery(String.format("select * from images where is_lunch = true and Date='%s';",day));
-            con.close();
+
             if (rs.next()){
                 filePath=rs.getString("Path");
             }
-
+            con.close();
             if (filePath==null){
                 filePath=uploadDir+sep+"no_image.png";
             }
         }catch (Exception e){
             e.printStackTrace();
         }
+
         try{
             in = new FileInputStream(filePath);
         }catch (Exception e){
@@ -75,10 +76,10 @@ public class ImageController {
             con.createStatement().execute("use " + key.getDBname());
 
             ResultSet rs =con.createStatement().executeQuery(String.format("select * from images where is_lunch = false and Date='%s';",day));
-            con.close();
             if (rs.next()){
                 filePath=rs.getString("Path");
             }
+            con.close();
             if (filePath==null){
                 filePath=uploadDir+sep+"no_image.png";
             }
