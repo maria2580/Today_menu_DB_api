@@ -1,4 +1,4 @@
-package com.primitive.todayMenuDBApi.controller.DBcontroller;
+package com.primitive.todayMenuDBApi.controller;
 
 public class DB_Connection_Data {
     private String DBname= "primitive_today_menu_db"; //replace your own DB name

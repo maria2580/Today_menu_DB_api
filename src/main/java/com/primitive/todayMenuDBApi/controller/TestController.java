@@ -1,13 +1,8 @@
 package com.primitive.todayMenuDBApi.controller;
 
-import com.primitive.todayMenuDBApi.controller.DBcontroller.DB_Connection_Data;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.*;
 import java.sql.*;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 
 @RestController

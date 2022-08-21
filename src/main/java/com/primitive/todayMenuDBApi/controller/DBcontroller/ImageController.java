@@ -1,24 +1,16 @@
 package com.primitive.todayMenuDBApi.controller.DBcontroller;
 
-import org.apache.commons.io.FileUtils;
+import com.primitive.todayMenuDBApi.controller.DB_Connection_Data;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.Statement;
-import java.text.FieldPosition;
-import java.util.ArrayList;
 
 @RestController
 @RequestMapping("")
