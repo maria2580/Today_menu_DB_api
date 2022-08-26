@@ -1,6 +1,7 @@
 package com.primitive.todayMenuDBApi.controller.DBcontroller;
 
 import com.primitive.todayMenuDBApi.controller.DB_Connection_Data;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.FileCopyUtils;
@@ -11,21 +12,22 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.util.Base64;
 
 @RestController
 @RequestMapping("")
 public class ImageController {
     String osName = System.getProperty("os.name").toLowerCase();
     private final String sep=File.separator;
-    private final String uploadDir = (osName.contains("win")?"D:\\today_menu_api\\images":"/home/ubuntu/today_menu_api/images");//sep 이 / 인 경우 리눅스이며 구분자 중복 필요 없음
-    private final String u = (osName.contains("win")?"D:\\\\today_menu_api\\\\images":"/home/ubuntu/today_menu_api/images");
+    private final String uploadDir = (osName.contains("win")?"D:\\today_menu_api\\images":"/home/ec2-user/today_menu_api/images");//sep 이 / 인 경우 리눅스이며 구분자 중복 필요 없음
+    private final String u = (osName.contains("win")?"D:\\\\today_menu_api\\\\images":"/home/ec2-user/today_menu_api/images");
 
 
 
     private DB_Connection_Data key = DB_Connection_Data.getInstance();
 
     @GetMapping( value = "images/lunch/{day}", produces = MediaType.IMAGE_JPEG_VALUE )
-    public byte[] get_lunch_image(@PathVariable String day) throws IOException {
+    public String get_lunch_image(@PathVariable String day) throws IOException {
 
         String filePath = null;//DB에서 받아온 경로가 저장될 변수
         FileInputStream in=null;//로컬에서 읽은 파일이 들어오는 변수
@@ -41,7 +43,7 @@ public class ImageController {
                 filePath=rs.getString("Path");
             }
             con.close();
-            if (filePath==null){
+            if (filePath==null||filePath.equals("")){
                 filePath=uploadDir+sep+"no_image.png";
             }
         }catch (Exception e){
@@ -51,13 +53,15 @@ public class ImageController {
         try{
             in = new FileInputStream(filePath);
         }catch (Exception e){
+            filePath=uploadDir+sep+"no_image.png";
             in = new FileInputStream(uploadDir+sep+"no_image.png");
         }
-
-        return IOUtils.toByteArray(in);
+        byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath));
+        String encodedString = Base64.getEncoder().encodeToString(fileContent);
+        return encodedString;
     }
     @GetMapping(value = "images/dinner/{day}", produces = MediaType.IMAGE_JPEG_VALUE )
-    public byte[] get_dinner_image(@PathVariable String day) throws IOException{
+    public String get_dinner_image(@PathVariable String day) throws IOException{
 
         String filePath = null;//DB에서 받아온 경로가 저장될 변수
         FileInputStream in=null;//로컬에서 읽은 파일이 들어오는 변수
@@ -72,7 +76,7 @@ public class ImageController {
                 filePath=rs.getString("Path");
             }
             con.close();
-            if (filePath==null){
+            if (filePath==null||filePath.equals("")){
                 filePath=uploadDir+sep+"no_image.png";
             }
         }catch (Exception e){
@@ -81,26 +85,28 @@ public class ImageController {
         try{
             in = new FileInputStream(filePath);
         }catch (Exception e){
+            filePath=uploadDir+sep+"no_image.png";
             in = new FileInputStream(uploadDir+sep+"no_image.png");
         }
-
-        return IOUtils.toByteArray(in);
+        byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath));
+        String encodedString = Base64.getEncoder().encodeToString(fileContent);
+        return encodedString;
     }
 
 
     @PostMapping("add/images/lunch/{day}")//@modelattribute("key")
-    public void set_lunch_image(@PathVariable String day, @RequestParam MultipartFile file){
-        if (!file.isEmpty()) {
-            final String suffix =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-            String filename =day+suffix;
+    public void set_lunch_image(@PathVariable String day, @RequestBody String encoded_image){
+        if (!encoded_image.isEmpty()) {
+            String filename =day+".png";
             String fullPath = uploadDir +sep+"lunch"+sep+ filename;
             String DBPath= u+sep+sep+"lunch"+sep+sep+filename;//윈도우인 경우 구분자가 \이기 때문에 구분자 중복 필요
-
+            byte [] decoded_image =Base64.getDecoder().decode(encoded_image);//받은 이미지 디코딩 해서 로컬에 저장
     //멀티파트로 받은 변수를 로컬 경로에 저장
-            if(file != null) {
+            if(encoded_image != null) {
                 try{
+                    if(!osName.contains("win")){Runtime.getRuntime().exec("chmod -R 777 " + uploadDir);}
                     File uploadFile = new File(fullPath);
-                    FileCopyUtils.copy(file.getBytes(), uploadFile);
+                    FileCopyUtils.copy(decoded_image, uploadFile);
 
                 }catch (Exception e){
                     e.printStackTrace();
@@ -140,18 +146,18 @@ public class ImageController {
     }
 
     @PostMapping("add/images/dinner/{day}")
-    public void set_dinner_image(@PathVariable String day, @RequestParam MultipartFile file){
-        if (!file.isEmpty()) {
-            final String suffix =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-            String filename =day+suffix;
+    public void set_dinner_image(@PathVariable String day, @RequestBody String encoded_image){
+        if (!encoded_image.isEmpty()) {
+            String filename =day+".png";
             String fullPath = uploadDir +sep+"dinner"+sep+ filename;
             String DBPath= u+sep+sep+"dinner"+sep+sep+filename;//윈도우인 경우 구분자가 \이기 때문에 구분자 중복 필요
+            byte [] decoded_image =Base64.getDecoder().decode(encoded_image);//받은 이미지 디코딩 해서 로컬에 저장
             //멀티파트로 받은 변수를 로컬 경로에 저장
-            if(file != null) {
+            if(encoded_image != null) {
                 try{
-                    if(!osName.contains("win")){Runtime.getRuntime().exec("chmod -R 777 " + "/home/ubuntu/today_menu_api/");}
+                    if(!osName.contains("win")){Runtime.getRuntime().exec("chmod -R 777 " + uploadDir);}
                     File uploadFile = new File(fullPath);
-                    FileCopyUtils.copy(file.getBytes(), uploadFile);
+                    FileCopyUtils.copy(decoded_image, uploadFile);
                 }catch (Exception e){
                     e.printStackTrace();
                 }

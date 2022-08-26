@@ -57,7 +57,7 @@ public class CommentController {
 
     @PostMapping("add/comments/{date}")
     public String add_data(@RequestBody String content, @PathVariable String date){
-        long now = System.currentTimeMillis()+32400000;//9시간 추가, 하루 = 86,400,000
+        long now = System.currentTimeMillis();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String written_time = sdf.format(new Date(now));
         try  {
