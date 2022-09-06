@@ -44,8 +44,8 @@ public class SuggestionController {
                 a=0;
                 System.out.println("a=0처리 ");
             }
-            String query = String.format("insert into claims(ID, suggestions, date) values(%d,'%s','%s');",a+1,content,date);
-            stmt.executeUpdate(query);
+            String query = String.format("insert into claims (ID, suggestion,date) values(%d,'%s','%s');",a+1,content,date);
+            con.createStatement().executeUpdate(query);
             System.out.println("1");
             con.close();
         }catch(Exception e) {}
