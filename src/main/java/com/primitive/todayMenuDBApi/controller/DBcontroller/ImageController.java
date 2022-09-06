@@ -1,6 +1,5 @@
 package com.primitive.todayMenuDBApi.controller.DBcontroller;
 
-import com.primitive.todayMenuDBApi.controller.DB_Connection_Data;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.MediaType;

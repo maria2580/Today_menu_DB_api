@@ -1,12 +1,13 @@
 package com.primitive.todayMenuDBApi.controller;
 
+import com.primitive.todayMenuDBApi.controller.DBcontroller.DB_Connection_Data;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.*;
 
 
 @RestController
-@RequestMapping("")
+@RequestMapping("/")
 public class TestController {
     //to configure DB setting replace string value.
     private DB_Connection_Data key = DB_Connection_Data.getInstance();
